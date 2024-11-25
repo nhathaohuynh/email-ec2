@@ -1,9 +1,9 @@
 import env from '~/config/env.config'
 import { IRoute } from '~/types'
 import { HOST } from './constant.util'
+import chalk from 'chalk'
 
 export const colorizeMethod = async (method: string) => {
-  const chalk = (await import('chalk')).default
   switch (method) {
     case 'GET':
       return chalk.green(method)
