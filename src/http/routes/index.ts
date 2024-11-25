@@ -7,7 +7,7 @@ const router = express.Router()
 
 // check api
 router.get('/check-status', (req, res) => {
-  res.json({
+  res.status(200).json({
     message: 'API is working',
     url: {
       user: ROUTE_APP.users.path,
