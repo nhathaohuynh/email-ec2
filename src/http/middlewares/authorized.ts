@@ -4,7 +4,8 @@ import { verifyToken } from '~/utils'
 import { GoneError, UnauthorizedError } from '~/utils/error-response.util'
 
 export const isAuthorized = (req: Request, res: Response, next: NextFunction) => {
-  const accessToken = req.cookies.accessToken || req.headers.authorization?.split(' ')[1]
+  const accessToken = req.headers.authorization?.split(' ')[1]
+
   if (!accessToken) {
     return next(new UnauthorizedError())
   }

@@ -5,7 +5,6 @@ export const EMAIL_BOX_COLLECTION = 'emaill_boxes'
 
 export interface IEmailBox extends Document {
   _id: Schema.Types.ObjectId
-  user: Schema.Types.ObjectId
   mail_address: string
   auto_reply_enabled: boolean
   auto_reply_message: string
@@ -21,12 +20,6 @@ export interface IEmailBox extends Document {
 
 const mailAdressSchema = new Schema<IEmailBox>(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: DOCUMENT_MODLE_REGISTRATION.USER,
-      required: true
-    },
-
     mail_address: {
       unique: true,
       index: true,

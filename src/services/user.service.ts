@@ -61,32 +61,21 @@ export class UserService {
     }
 
     const hashPassword = bcrypt.hashSync(password)
-    const user = await this.userRepository.create({
-      email,
-      full_name,
-      phone,
-      password: hashPassword
-    })
-    const mailBox = await this.mailBoxService.create(mail_address, user._id)
 
-    const accessToken = generateToken(
-      { id: user._id, mail_address: mailBox.mail_address },
-      env.AT_JWT_SECRET,
-      env.AT_EXPIRES_IN
-    )
-    const refreshToken = generateToken(
-      { id: user._id, mail_address: mailBox.mail_address },
-      env.RT_JWT_SECRET,
-      env.RT_EXPIRES_IN
-    )
-    const userRes = selectedFields(USER_SELECT_FIELDS, user)
+    const [mail, user] = await Promise.all([
+      this.mailBoxService.create(mail_address),
+      this.userRepository.create({
+        email,
+        full_name,
+        mail_address,
+        phone,
+        password: hashPassword
+      })
+    ])
 
     return {
-      ...userRes,
-      mailBoxId: mailBox._id,
-      mailAddress: mailBox.mail_address,
-      accessToken: accessToken,
-      refreshToken: refreshToken
+      userId: user._id,
+      mailBoxId: mail._id
     }
   }
 
@@ -114,30 +103,16 @@ export class UserService {
       emailService.sendSingleMail(mailOptions)
     }
 
-    const mailBox = await this.mailBoxService.findByUser(user._id.toString())
-
-    if (!mailBox) {
-      throw new NotFoundError(CONSTANT.MSG_USER_NOT_FOUND)
-    }
-
     const accessToken = generateToken(
-      { id: user._id, mail_address: mailBox.mail_address },
+      { id: user._id, mail_address: user.mail_address },
       env.AT_JWT_SECRET,
       env.AT_EXPIRES_IN
-    )
-    const refreshToken = generateToken(
-      { id: user._id, mail_address: mailBox.mail_address },
-      env.RT_JWT_SECRET,
-      env.RT_EXPIRES_IN
     )
 
     const userRes = selectedFields(USER_SELECT_FIELDS, user)
     return {
       ...userRes,
-      mailBoxId: mailBox._id,
-      mailAddress: mailBox.mail_address,
-      accessToken,
-      refreshToken
+      accessToken
     }
   }
 
@@ -156,6 +131,23 @@ export class UserService {
     if (!isMatchToken) {
       throw new BadRequest(CONSTANT.MSG_INVALID_TOKEN)
     }
+
+    return {
+      _id: user._id
+    }
+  }
+
+  async enableTowSepVerification(userId: string) {
+    const user = await this.userRepository.findById(userId)
+    if (!user) {
+      throw new NotFoundError(CONSTANT.MSG_USER_NOT_FOUND)
+    }
+
+    await this.userRepository.findByIdAndUpdate(userId, {
+      $set: {
+        two_step_verification: !user.two_step_verification
+      }
+    })
 
     return {
       _id: user._id

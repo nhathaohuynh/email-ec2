@@ -29,6 +29,11 @@ RouteUser.route(ROUTE_APP.users.child.twoStepVerification.path).post(
   catchErrorHandler(userController.twoStepVerification.bind(userController))
 )
 
+RouteUser.route(ROUTE_APP.users.child.enableTowoStepVerification.path).post(
+  isAuthorized,
+  catchErrorHandler(userController.enableTowSepVerification.bind(userController))
+)
+
 RouteUser.route(ROUTE_APP.users.child.refreshToken.path).get(
   catchErrorHandler(userController.refreshToken.bind(userController))
 )
