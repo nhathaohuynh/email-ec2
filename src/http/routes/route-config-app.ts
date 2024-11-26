@@ -9,8 +9,13 @@ export const ROUTE_APP = {
         method: 'POST'
       },
 
+      enableTowoStepVerification: {
+        path: '/enable-two-step-verification',
+        method: 'POST'
+      },
+
       twoStepVerification: {
-        path: '/two-step-verification',
+        path: '/verify-token',
         method: 'POST'
       },
 

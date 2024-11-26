@@ -15,6 +15,7 @@ export interface IMessage extends Document {
   to: string[]
   cc: string[]
   bcc: string[]
+  auto_reply_status: boolean
   forward_message: Schema.Types.ObjectId | null
   reply_message: Schema.Types.ObjectId | null
   orginal_message: Schema.Types.ObjectId | null
@@ -102,6 +103,11 @@ const messageSchema = new Schema<IMessage>(
     reply_message: {
       type: Schema.Types.ObjectId,
       default: null
+    },
+
+    auto_reply_status: {
+      type: Boolean,
+      default: false
     },
 
     forward_message: {

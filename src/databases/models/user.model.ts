@@ -12,6 +12,7 @@ export interface IUser extends Document {
   full_name: string
   avatar: string
   phone: string
+  mail_address: string
   two_step_verification: boolean
   createdAt: Date
   updatedAt: Date
@@ -33,6 +34,13 @@ const UserSchema: Schema = new Schema<IUser>(
         },
         message: 'Invalid email address'
       }
+    },
+
+    mail_address: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true
     },
 
     password: {
@@ -73,6 +81,8 @@ const UserSchema: Schema = new Schema<IUser>(
   }
 )
 
-UserSchema.index({ email: 1, phone: 1 })
+UserSchema.index({ phone: 1 })
+UserSchema.index({ email: 1 })
+UserSchema.index({ mail_address: 1 })
 
 export const UserModel = mongoose.model<IUser>(DOCUMENT_MODLE_REGISTRATION.USER, UserSchema)

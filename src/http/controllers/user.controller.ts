@@ -6,7 +6,7 @@ import { UserService } from '~/services/user.service'
 import { CreatedResponse, NoContentResponse, OKResponse } from '~/utils/success-response.util'
 
 const CONSTANT = {
-  MSG_CREATE_USER_SUCCESS: 'USer sign up successfully'
+  MSG_CREATE_USER_SUCCESS: 'User sign up successfully'
 }
 
 @injectable()
@@ -15,11 +15,16 @@ export class UserController {
 
   async signUp(req: Request, res: Response) {
     const data = await this.userService.signUp(req.body)
-    return new CreatedResponse(data, CONSTANT.MSG_CREATE_USER_SUCCESS).clearToken(res).send(req, res)
+    return new CreatedResponse(data, CONSTANT.MSG_CREATE_USER_SUCCESS).send(req, res)
   }
 
   async signIn(req: Request, res: Response) {
     const data = await this.userService.signIn(req.body)
+    return new OKResponse(data).send(req, res)
+  }
+
+  async enableTowSepVerification(req: Request, res: Response) {
+    const data = await this.userService.enableTowSepVerification(req.userId)
     return new OKResponse(data).send(req, res)
   }
 

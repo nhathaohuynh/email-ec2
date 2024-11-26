@@ -1,5 +1,4 @@
 import { inject, injectable } from 'inversify'
-import { ObjectId } from 'mongoose'
 import { ComposeMessage, ForwardMessage, ReplyMessage, SendMessage } from '~/dtos/mail-box.dto'
 import { MailBoxRepository } from '~/repositories/mail-box'
 import { MAIL_ADDRESS_RULE, NAME_SERVICE_INJECTION } from '~/utils/constant.util'
@@ -473,8 +472,8 @@ export class MailBoxService {
     ])
   }
 
-  create(mail_address: string, user: ObjectId) {
-    return this.repository.create({ mail_address, user })
+  create(mail_address: string) {
+    return this.repository.create({ mail_address })
   }
 
   findByUser(user: string) {
