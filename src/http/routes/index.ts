@@ -3,6 +3,8 @@ import { ROUTE_APP } from './route-config-app'
 import { RouteUser } from './user.route'
 import { AttachmentRoute } from './attachment.route'
 import { MailBoxRoute } from './mail-box.route'
+import { LabelRoute } from './label.route'
+import { ConversationRoute } from './conversation.route'
 const router = express.Router()
 
 // check api
@@ -28,6 +30,10 @@ router.use(ROUTE_APP.attchments.path, AttachmentRoute)
 router.use(ROUTE_APP.mailBox.path, MailBoxRoute)
 
 // label API
-router.use(ROUTE_APP.labels.path, AttachmentRoute)
+router.use(ROUTE_APP.labels.path, LabelRoute)
+
+// conversation API
+
+router.use(ROUTE_APP.conversation.path, ConversationRoute)
 
 export default router

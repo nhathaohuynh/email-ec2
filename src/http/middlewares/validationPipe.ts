@@ -2,6 +2,7 @@ import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import { NextFunction, Request, Response } from 'express'
 import dtoRegistry from '~/dtos/dto-registration'
+import { normalizeUrl } from '~/utils'
 import { BadRequest } from '~/utils/error-response.util'
 
 interface IParamsValidation {
@@ -14,7 +15,7 @@ export const validationPipe =
   async (req: Request, res: Response, next: NextFunction) => {
     const isvalidateQueryParams = queryParams && queryParams.length > 0
     const isvalidateRouteParams = routeParams && routeParams.length > 0
-    const path = req.originalUrl
+    const path = normalizeUrl(req.originalUrl)
     const method = req.method
     const strategyName = `${path}:${method}`
     const classValidation = dtoRegistry.get(strategyName)

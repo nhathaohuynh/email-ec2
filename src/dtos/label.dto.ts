@@ -12,7 +12,8 @@ export class CreateLabel {
 
   @IsString()
   @IsNotEmpty()
-  description: string
+  @IsOptional()
+  description?: string
 }
 export class UpdateLabel {
   @IsString()
@@ -23,7 +24,7 @@ export class UpdateLabel {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  color?: string
+  color: string
 
   @IsString()
   @IsNotEmpty()

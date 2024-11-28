@@ -10,6 +10,11 @@ const LabelRoute = express.Router()
 
 const labelController = container.get<LabelController>(LabelController)
 
+LabelRoute.route(ROUTE_APP.labels.child.getList.path).get(
+  isAuthorized,
+  catchErrorHandler(labelController.getList.bind(labelController))
+)
+
 LabelRoute.route(ROUTE_APP.labels.child.create.path).post(
   isAuthorized,
   validationPipe(),
@@ -22,7 +27,7 @@ LabelRoute.route(ROUTE_APP.labels.child.delete.path).delete(
   catchErrorHandler(labelController.deleteLabel.bind(labelController))
 )
 
-LabelRoute.route(ROUTE_APP.labels.child.update.path).delete(
+LabelRoute.route(ROUTE_APP.labels.child.update.path).put(
   isAuthorized,
   validationPipe({ routeParams: ['id'] }),
   catchErrorHandler(labelController.updateLabel.bind(labelController))

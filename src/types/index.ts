@@ -22,7 +22,30 @@ export type JWTPayload = {
   mail_address: string
 }
 
-export enum MessageStatus {
+export enum ConversationStatus {
+  INBOX = 'inbox',
+  STARRED = 'starred',
+  TRASH = 'trash',
   DRAFT = 'draft',
   SENT = 'sent'
+}
+
+export enum ActionConversation {
+  MOVE_INBOX = 'inbox',
+  STARRED = 'starred',
+  MOVE_TRASH = 'trash',
+  READ_STATUS = 'read'
+}
+
+export type SearchFields = {
+  subject?: string
+  has_attachments?: boolean
+  to?: string
+  fromDate?: Date
+  toDate?: Date
+}
+
+export enum StatusActionLabel {
+  INSERT = 'insert',
+  REMOVE = 'remove'
 }

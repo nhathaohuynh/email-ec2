@@ -12,14 +12,14 @@ const MESSAGES = {
 export class MailBoxController {
   constructor(@inject(MailBoxService) private mailBoxService: MailBoxService) {}
 
-  async composeMessage(req: Request, res: Response) {
-    const data = await this.mailBoxService.composeMail(req.mail_address, req.body)
-    return new CreatedResponse(data, MESSAGES.SEND_SUCCESS).send(req, res)
+  async darftMessage(req: Request, res: Response) {
+    const data = await this.mailBoxService.darfMessage(req.mail_address, req.body)
+    return new CreatedResponse(data, MESSAGES.COMPOSE_SUCCESS).send(req, res)
   }
 
   async sednMessage(req: Request, res: Response) {
     const data = await this.mailBoxService.sendMessage(req.mail_address, req.body)
-    return new OKResponse(data, MESSAGES.COMPOSE_SUCCESS).send(req, res)
+    return new OKResponse(data, MESSAGES.SEND_SUCCESS).send(req, res)
   }
 
   async replyMessage(req: Request, res: Response) {

@@ -10,10 +10,10 @@ const MailBoxRoute = express.Router()
 
 const mailBoxController = container.get<MailBoxController>(MailBoxController)
 
-MailBoxRoute.route(ROUTE_APP.mailBox.child.compose.path).post(
+MailBoxRoute.route(ROUTE_APP.mailBox.child.darftMessage.path).post(
   isAuthorized,
   validationPipe(),
-  catchErrorHandler(mailBoxController.composeMessage.bind(mailBoxController))
+  catchErrorHandler(mailBoxController.darftMessage.bind(mailBoxController))
 )
 
 MailBoxRoute.route(ROUTE_APP.mailBox.child.send.path).post(

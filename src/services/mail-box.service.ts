@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify'
-import { ComposeMessage, ForwardMessage, ReplyMessage, SendMessage } from '~/dtos/mail-box.dto'
+import { DraftMessage, ForwardMessage, ReplyMessage, SendMessage } from '~/dtos/mail-box.dto'
 import { MailBoxRepository } from '~/repositories/mail-box'
 import { MAIL_ADDRESS_RULE, NAME_SERVICE_INJECTION } from '~/utils/constant.util'
 import { MessageService } from './message.service'
@@ -25,7 +25,7 @@ export class MailBoxService {
     @inject(ConversationService) private readonly conversation: ConversationService
   ) {}
 
-  async composeMail(mail_address: string, payload: ComposeMessage) {
+  async darfMessage(mail_address: string, payload: DraftMessage) {
     if (!payload.message_id && !payload.conversation_id) {
       const message = await this.messageService.create({
         ...payload,

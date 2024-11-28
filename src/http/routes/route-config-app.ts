@@ -55,7 +55,7 @@ export const ROUTE_APP = {
     path: '/attachments',
     child: {
       upload: {
-        path: '/',
+        path: '',
         method: 'POST'
       },
 
@@ -70,9 +70,15 @@ export const ROUTE_APP = {
     path: '/labels',
     child: {
       create: {
-        path: '/',
+        path: '',
         method: 'POST'
       },
+
+      getList: {
+        path: '',
+        method: 'GET'
+      },
+
       update: {
         path: '/:id',
         method: 'PUT'
@@ -87,8 +93,8 @@ export const ROUTE_APP = {
   mailBox: {
     path: '/mail-box',
     child: {
-      compose: {
-        path: '/compose',
+      darftMessage: {
+        path: '/draft-message',
         method: 'POST'
       },
 
@@ -105,6 +111,36 @@ export const ROUTE_APP = {
       forward: {
         path: '/forward',
         method: 'POST'
+      }
+    }
+  },
+
+  conversation: {
+    path: '/conversation',
+    child: {
+      getList: {
+        path: '',
+        method: 'GET'
+      },
+
+      getListByLabel: {
+        path: '/label/:label_id',
+        method: 'GET'
+      },
+
+      search: {
+        path: '/search',
+        method: 'GET'
+      },
+
+      updaetLabel: {
+        path: '/:id/label',
+        method: 'PUT'
+      },
+
+      updateStatus: {
+        path: '/:id',
+        method: 'PUT'
       }
     }
   }
@@ -131,8 +167,12 @@ export const nameStrateryValidation = {
   DELETE_LABEL: `${API_PREFIX}${ROUTE_APP.labels.path}${ROUTE_APP.labels.child.delete.path}:${ROUTE_APP.labels.child.delete.method}`,
 
   // MAIL BOX
-  COMPOSE_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.compose.path}:${ROUTE_APP.mailBox.child.compose.method}`,
+  COMPOSE_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.darftMessage.path}:${ROUTE_APP.mailBox.child.darftMessage.method}`,
   SEND_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.send.path}:${ROUTE_APP.mailBox.child.send.method}`,
   REPLY_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.reply.path}:${ROUTE_APP.mailBox.child.reply.method}`,
-  FORWARD_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.forward.path}:${ROUTE_APP.mailBox.child.forward.method}`
+  FORWARD_MAIL: `${API_PREFIX}${ROUTE_APP.mailBox.path}${ROUTE_APP.mailBox.child.forward.path}:${ROUTE_APP.mailBox.child.forward.method}`,
+
+  // CONVERSATION
+  SEARCH_CONVERSATION: `${API_PREFIX}${ROUTE_APP.conversation.path}${ROUTE_APP.conversation.child.search.path}:${ROUTE_APP.conversation.child.search.method}`,
+  LABEL_CONVERSATION: `${API_PREFIX}${ROUTE_APP.conversation.path}${ROUTE_APP.conversation.child.updaetLabel.path}:${ROUTE_APP.conversation.child.updaetLabel.method}`
 }

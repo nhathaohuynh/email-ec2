@@ -11,9 +11,9 @@ import {
   VerificationToken
 } from './user.dto'
 import { DtoEnv } from './env.dto'
-import { DeleteAttachment } from './attachment.dto'
 import { CreateLabel, UpdateLabel } from './label.dto'
-import { ComposeMessage, ForwardMessage, ReplyMessage, SendMessage } from './mail-box.dto'
+import { DraftMessage, ForwardMessage, ReplyMessage, SendMessage } from './mail-box.dto'
+import { LabelConversation, SearchConversation } from './conversation.dto'
 
 const dtoRegistry: Map<string, Constructor<DtoBase>> = new Map()
 
@@ -27,16 +27,19 @@ dtoRegistry.set(nameStrateryValidation.VERIFY_TOKEN, VerificationToken)
 dtoRegistry.set(nameStrateryValidation.RECOVERY_PASSWORD, RecoveryPassword)
 
 // mail box dto
-dtoRegistry.set(nameStrateryValidation.COMPOSE_MAIL, ComposeMessage)
+dtoRegistry.set(nameStrateryValidation.COMPOSE_MAIL, DraftMessage)
 dtoRegistry.set(nameStrateryValidation.SEND_MAIL, SendMessage)
 dtoRegistry.set(nameStrateryValidation.REPLY_MAIL, ReplyMessage)
 dtoRegistry.set(nameStrateryValidation.FORWARD_MAIL, ForwardMessage)
 
 // attachment dto
-dtoRegistry.set(nameStrateryValidation.DELETE_ATTACHMENT, DeleteAttachment)
 
 // label dto
 dtoRegistry.set(nameStrateryValidation.CREATE_LABEL, CreateLabel)
 dtoRegistry.set(nameStrateryValidation.UPDATE_LABEL, UpdateLabel)
+
+// conversation dto
+dtoRegistry.set(nameStrateryValidation.SEARCH_CONVERSATION, SearchConversation)
+dtoRegistry.set(nameStrateryValidation.LABEL_CONVERSATION, LabelConversation)
 
 export default dtoRegistry

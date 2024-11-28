@@ -27,7 +27,6 @@ const attachmentchema = new Schema<IAttachment>(
     },
     mail_address: {
       type: String,
-      unique: true,
       required: true
     },
     url: {

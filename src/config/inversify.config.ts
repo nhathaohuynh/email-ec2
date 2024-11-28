@@ -7,6 +7,7 @@ import { IEmailBox } from '~/databases/models/mail-box.model'
 import { IMessage } from '~/databases/models/message.model'
 import { IUser } from '~/databases/models/user.model'
 import { AttachmentController } from '~/http/controllers/attachment.controller'
+import { ConversationController } from '~/http/controllers/conversation.controller'
 import { LabelController } from '~/http/controllers/label.controller'
 import { MailBoxController } from '~/http/controllers/mail-box.controller'
 import { UserController } from '~/http/controllers/user.controller'
@@ -37,6 +38,7 @@ container.bind(MessageService).to(MessageService)
 
 container.bind<IRepository<IConversation>>(NAME_SERVICE_INJECTION.CONVERSATION_REPOSITORY).to(ConversationRepository)
 container.bind(ConversationService).to(ConversationService)
+container.bind(ConversationController).to(ConversationController)
 
 container.bind<IRepository<IEmailBox>>(NAME_SERVICE_INJECTION.MAIL_BOX_REPOSITORY).to(MailBoxRepository)
 container.bind(MailBoxService).to(MailBoxService)
