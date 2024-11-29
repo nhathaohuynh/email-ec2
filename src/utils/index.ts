@@ -48,6 +48,14 @@ export const selectedFields = <T extends object>(fields: string[], obj: T): Part
   }, {} as Partial<T>)
 }
 
+export const normalizeUrl = (url: string) => {
+  // Remove the query parameters from the URL (everything after ?)
+  const cleanUrl = url.split('?')[0]
+
+  // Replace MongoDB _id or any dynamic segment with ':id'
+  return cleanUrl.replace(/\/[a-fA-F0-9]{24}(?=\/|$)/g, '/:id')
+}
+
 import { plainToClass } from 'class-transformer'
 import { validateSync } from 'class-validator'
 import dtoRegistry from '~/dtos/dto-registration'

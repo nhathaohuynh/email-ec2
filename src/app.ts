@@ -8,9 +8,9 @@ import { notFound } from './http/middlewares/not-found'
 import { preventCaching } from './http/middlewares/prevent-caching'
 import { rateLimiter } from './http/middlewares/rate-limiter'
 import router from './http/routes'
-// import { ROUTE_APP } from './http/routes/route-config-app'
+import { ROUTE_APP } from './http/routes/route-config-app'
 import { API_PREFIX } from './utils/constant.util'
-// import { routeApp } from './utils/route-app.util'
+import { routeApp } from './utils/route-app.util'
 
 export const expressApp = (app: Express) => {
   // middleware
@@ -35,5 +35,5 @@ export const expressApp = (app: Express) => {
   app.use(notFound)
   app.use(errorHandler)
 
-  // routeApp(ROUTE_APP, API_PREFIX)
+  routeApp(ROUTE_APP, API_PREFIX)
 }

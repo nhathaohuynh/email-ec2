@@ -10,16 +10,16 @@ const MailBoxRoute = express.Router()
 
 const mailBoxController = container.get<MailBoxController>(MailBoxController)
 
-MailBoxRoute.route(ROUTE_APP.mailBox.child.compose.path).post(
+MailBoxRoute.route(ROUTE_APP.mailBox.child.darftMessage.path).post(
   isAuthorized,
   validationPipe(),
-  catchErrorHandler(mailBoxController.composeMessage.bind(mailBoxController))
+  catchErrorHandler(mailBoxController.darftMessage.bind(mailBoxController))
 )
 
 MailBoxRoute.route(ROUTE_APP.mailBox.child.send.path).post(
   isAuthorized,
   validationPipe(),
-  catchErrorHandler(mailBoxController.sednMessage.bind(mailBoxController))
+  catchErrorHandler(mailBoxController.sendMessage.bind(mailBoxController))
 )
 
 MailBoxRoute.route(ROUTE_APP.mailBox.child.reply.path).post(
@@ -31,7 +31,19 @@ MailBoxRoute.route(ROUTE_APP.mailBox.child.reply.path).post(
 MailBoxRoute.route(ROUTE_APP.mailBox.child.forward.path).post(
   isAuthorized,
   validationPipe(),
-  catchErrorHandler(mailBoxController.replyMessage.bind(mailBoxController))
+  catchErrorHandler(mailBoxController.forwardMessage.bind(mailBoxController))
+)
+
+MailBoxRoute.route(ROUTE_APP.mailBox.child.discardMessage.path).delete(
+  isAuthorized,
+  validationPipe({ routeParams: ['conversation_id', 'message_id'] }),
+  catchErrorHandler(mailBoxController.discardMessage.bind(mailBoxController))
+)
+
+MailBoxRoute.route(ROUTE_APP.mailBox.child.toggleAutoReply.path).post(
+  isAuthorized,
+  validationPipe(),
+  catchErrorHandler(mailBoxController.toggleAutoReply.bind(mailBoxController))
 )
 
 export { MailBoxRoute }

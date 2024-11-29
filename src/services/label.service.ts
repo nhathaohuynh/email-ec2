@@ -11,7 +11,7 @@ const MESSAGES = {
 }
 @injectable()
 export class LabelService {
-  constructor(@inject(NAME_SERVICE_INJECTION.ATTACHMENT_REPOSITORY) private labelRepository: LabelRepository) {}
+  constructor(@inject(NAME_SERVICE_INJECTION.LABEL_REPOSIROTY) private labelRepository: LabelRepository) {}
 
   getLabels(mail_address: string) {
     return this.labelRepository.find({ mail_address })
@@ -27,6 +27,7 @@ export class LabelService {
       ...payload,
       mail_address
     })
+
     if (!label) {
       throw new BadRequest(MESSAGES.LABEL_CREATE_FAILED)
     }
@@ -34,17 +35,29 @@ export class LabelService {
     return label
   }
 
-  deleteLabel(labelId: string) {
-    return this.labelRepository.findByIdAndDelete(labelId)
+  async deleteLabel(labelId: string) {
+    const res = await this.labelRepository.findByIdAndDelete(labelId)
+
+    if (!res) {
+      throw new BadRequest(MESSAGES.LABEL_UPDATE_FAILED)
+    }
+
+    return {
+      _id: res._id
+    }
   }
 
   async updateLabel(labelId: string, payload: CreateLabel) {
     const res = await this.labelRepository.findByIdAndUpdate(labelId, {
       $set: payload
     })
+
     if (!res) {
       throw new BadRequest(MESSAGES.LABEL_UPDATE_FAILED)
     }
-    return res
+
+    return {
+      _id: res._id
+    }
   }
 }

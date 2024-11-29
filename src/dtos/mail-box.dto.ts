@@ -1,7 +1,7 @@
 import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { ObjectId } from 'mongoose'
 
-export class ComposeMessage {
+export class DraftMessage {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
@@ -20,17 +20,7 @@ export class ComposeMessage {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  reply_normal: ObjectId
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
   forward_message: ObjectId
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  reply_bcc: ObjectId
 
   @IsString()
   @IsNotEmpty()

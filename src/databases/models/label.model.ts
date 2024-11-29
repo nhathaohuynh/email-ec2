@@ -33,7 +33,8 @@ export const labelSchema = new Schema<ILabel>(
 
     description: {
       type: String,
-      trim: true
+      trim: true,
+      default: null
     }
   },
   { timestamps: true, collection: LABEL_COLLECTION }

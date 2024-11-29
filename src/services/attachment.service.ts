@@ -33,6 +33,7 @@ export class AttachmentService {
   async deleteAttachment(attachmentId: string, { url_id }: { url_id: string }) {
     console.log(url_id)
     const res = await cloudinary.uploader.destroy(url_id)
+    console.log(res)
     if (res.result === 'ok') {
       return this.attachmentRepository.findByIdAndDelete(attachmentId)
     }

@@ -1,7 +1,8 @@
 import { inject, injectable } from 'inversify'
-import { FilterQuery } from 'mongoose'
+import mongoose, { FilterQuery } from 'mongoose'
 import { IConversation } from '~/databases/models/conversation.model'
 import { ConversationRepository } from '~/repositories/conversation.repository'
+import { ConversationStatus, SearchFields } from '~/types'
 import { NAME_SERVICE_INJECTION } from '~/utils/constant.util'
 
 @injectable()
@@ -10,25 +11,25 @@ export class ConversationService {
     @inject(NAME_SERVICE_INJECTION.CONVERSATION_REPOSITORY) private readonly repository: ConversationRepository
   ) {}
 
-  getListConversation(mail_address: string, status: 'Inbox' | 'Starred' | 'Sent' | 'Draft' | 'Trash') {
+  getListConversation(mail_address: string, status: ConversationStatus) {
     const query: Record<string, string | boolean> = {
       mail_address: mail_address
     }
 
     switch (status) {
-      case 'Inbox':
+      case 'inbox':
         query.inbox_status = true
         break
-      case 'Starred':
+      case 'starred':
         query.starred_status = true
         break
-      case 'Sent':
+      case 'sent':
         query.sent_status = true
         break
-      case 'Draft':
+      case 'draft':
         query.draft_status = true
         break
-      case 'Trash':
+      case 'trash':
         query.trash_status = true
         break
       default:
@@ -47,44 +48,42 @@ export class ConversationService {
     })
   }
 
-  async searchBasicConversation(mail_address: string, keyword: string) {
-    return this.repository.find({
-      mail_address: mail_address,
-      slug: {
-        $regex: keyword,
-        $options: 'i'
-      }
-    })
-  }
-
-  async searchAdvancedConversation(
-    mail_address: string,
-    payload: { keyword: string; has_attachments: boolean; to: string; fromDate: Date; toDate: Date }
-  ) {
+  async searchConversation(mail_address: string, payload: SearchFields) {
     const query: FilterQuery<IConversation> = {
       mail_address: mail_address
     }
 
-    if (payload.keyword) {
+    if (payload?.subject) {
       query.slug = {
-        $regex: payload.keyword,
+        $regex: payload.subject,
         $options: 'i'
       }
     }
 
-    if (payload.has_attachments) {
+    if (payload?.has_attachments !== undefined) {
       query.has_attachments = payload.has_attachments
     }
 
-    if (payload.to) {
+    if (payload?.to) {
       query.participant_mail = {
         $in: [payload.to]
       }
     }
 
-    if (payload.fromDate && payload.toDate) {
+    if (payload?.fromDate && payload?.toDate) {
+      if (payload.fromDate > payload.toDate) {
+        throw new Error('fromDate must be earlier than toDate')
+      }
       query.last_message_date = {
         $gte: payload.fromDate,
+        $lte: payload.toDate
+      }
+    } else if (payload?.fromDate) {
+      query.last_message_date = {
+        $gte: payload.fromDate
+      }
+    } else if (payload?.toDate) {
+      query.last_message_date = {
         $lte: payload.toDate
       }
     }
@@ -92,39 +91,65 @@ export class ConversationService {
     return this.repository.find(query)
   }
 
-  moveToTrash(mail_address: string, conversation_id: string) {
+  moveToTrash(conversation_id: string) {
     return this.repository.findByIdAndUpdate(conversation_id, {
       $set: {
-        trash_status: true
+        trash_status: true,
+        inbox_status: false
       }
     })
   }
 
-  moveToInbox(mail_address: string, conversation_id: string) {
+  moveToInbox(conversation_id: string) {
     return this.repository.findByIdAndUpdate(conversation_id, {
       $set: {
-        trash_status: false
+        trash_status: false,
+        inbox_status: true
       }
     })
   }
 
-  starredConversation(mail_address: string, conversation_id: string) {
+  async toggleStarredStatus(conversation_id: string) {
+    const conversation = await this.repository.findById(conversation_id)
+    if (!conversation) {
+      throw new Error('Conversation not found')
+    }
+
+    conversation.starred_status = !conversation.starred_status
+    return conversation.save()
+  }
+
+  addLabel(conversation_id: string, { label_id }: { label_id: string }) {
     return this.repository.findByIdAndUpdate(conversation_id, {
-      $set: {
-        starred_status: true
+      $addToSet: {
+        labels: new mongoose.Types.ObjectId(label_id)
       }
     })
   }
 
-  unstarredConversation(mail_address: string, conversation_id: string) {
+  removeLabel(conversation_id: string, { label_id }: { label_id: string }) {
     return this.repository.findByIdAndUpdate(conversation_id, {
-      $set: {
-        starred_status: false
+      $pull: {
+        labels: new mongoose.Types.ObjectId(label_id)
       }
     })
   }
 
-  async create(payload: Partial<IConversation>) {
+  async toggleReadStatus(conversation_id: string) {
+    const conversation = await this.repository.findById(conversation_id)
+    if (!conversation) {
+      throw new Error('Conversation not found')
+    }
+
+    conversation.read_status = !conversation.read_status
+    return conversation.save()
+  }
+
+  findOne(query: FilterQuery<IConversation>) {
+    return this.repository.findOne(query)
+  }
+
+  create(payload: Partial<IConversation>) {
     return this.repository.create(payload)
   }
 
@@ -132,49 +157,13 @@ export class ConversationService {
     return this.repository.findById(id)
   }
 
-  async updateById(id: string, payload: Partial<IConversation>) {
+  updateById(id: string, payload: Partial<IConversation>) {
     return this.repository.findByIdAndUpdate(id, {
       $set: payload
     })
   }
 
-  async deleteConversationById(id: string) {
+  deleteConversationById(id: string) {
     return this.repository.findByIdAndDelete(id)
-  }
-
-  async makeLabel(mail_address: string, conversation_id: string, label_id: string) {
-    return this.repository.findByIdAndUpdate(conversation_id, {
-      $push: {
-        labels: label_id
-      }
-    })
-  }
-
-  async removeLabel(mail_address: string, conversation_id: string, label_id: string) {
-    return this.repository.findByIdAndUpdate(conversation_id, {
-      $pull: {
-        labels: label_id
-      }
-    })
-  }
-
-  async makeRead(mail_address: string, conversation_id: string) {
-    return this.repository.findByIdAndUpdate(conversation_id, {
-      $set: {
-        read_status: true
-      }
-    })
-  }
-
-  async makeUnread(mail_address: string, conversation_id: string) {
-    return this.repository.findByIdAndUpdate(conversation_id, {
-      $set: {
-        read_status: false
-      }
-    })
-  }
-
-  findOne(query: FilterQuery<IConversation>) {
-    return this.repository.findOne(query)
   }
 }

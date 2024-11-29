@@ -18,6 +18,11 @@ export class LabelController {
     return new CreatedResponse(data, MESSAGES.CREATE_SUCCESS).send(req, res)
   }
 
+  async getList(req: Request, res: Response) {
+    const data = await this.labelService.getLabels(req.mail_address)
+    return new OKResponse(data).send(req, res)
+  }
+
   async deleteLabel(req: Request, res: Response) {
     const data = await this.labelService.deleteLabel(req.params.id)
     return new OKResponse(data, MESSAGES.DELETE_SUCCESS).send(req, res)
