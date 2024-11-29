@@ -98,6 +98,11 @@ export const ROUTE_APP = {
         method: 'POST'
       },
 
+      discardMessage: {
+        path: '/discard-message/:conversation_id/:message_id',
+        method: 'DELETE'
+      },
+
       send: {
         path: '/send',
         method: 'POST'
@@ -110,6 +115,11 @@ export const ROUTE_APP = {
 
       forward: {
         path: '/forward',
+        method: 'POST'
+      },
+
+      toggleAutoReply: {
+        path: '/toggle-auto-reply',
         method: 'POST'
       }
     }

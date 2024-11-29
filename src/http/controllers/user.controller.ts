@@ -19,6 +19,7 @@ export class UserController {
   }
 
   async signIn(req: Request, res: Response) {
+    console.log(req.body)
     const data = await this.userService.signIn(req.body)
     return new OKResponse(data).send(req, res)
   }

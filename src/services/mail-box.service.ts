@@ -26,6 +26,148 @@ export class MailBoxService {
   ) {}
 
   async darfMessage(mail_address: string, payload: DraftMessage) {
+    // handle save relpy draft message
+    if (payload.reply_message && payload.conversation_id) {
+      if (!payload.message_id) {
+        // the first time relpy draft message
+
+        const conversation = await this.conversation.findById(payload.conversation_id.toString())
+        if (!conversation) {
+          throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
+        }
+        const payloadMessage: Partial<IMessage> = {
+          subject: 'Re: ' + conversation.subject,
+          body: payload.body,
+          reply_message: payload.reply_message,
+          to: payload.to || [],
+          cc: [],
+          bcc: [],
+          attachments: payload.attachments || [],
+          draft_status: true,
+          sent_date: new Date(Date.now()),
+          from: mail_address
+        }
+
+        const message = await this.messageService.create(payloadMessage)
+
+        conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
+        conversation.last_message_date = message.draft_date
+        conversation.draft_status = true
+        conversation.read_status = true
+        conversation.messages.push(message._id)
+
+        await conversation.save()
+
+        return { conversation: await conversation.populate('messages') }
+      } else {
+        const message = await this.messageService.updateMessageById(payload.message_id.toString(), {
+          ...payload,
+          draft_status: true,
+          from: mail_address
+        })
+
+        if (!message) throw new BadRequest(MESSAGES.MESSAGE_NOT_FOUND)
+
+        const conversation = await this.conversation.updateById(payload.conversation_id.toString(), {
+          has_attachments: !!payload?.attachments?.length
+        })
+
+        if (!conversation) {
+          throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
+        }
+        return { conversation: await conversation.populate('messages') }
+      }
+    }
+
+    // handle save forward draft message
+    if (payload.forward_message && payload.conversation_id) {
+      const validReceiver = [...(payload.to || []), ...(payload.cc || []), ...(payload.bcc || [])]
+
+      if (validReceiver.length === 0) {
+        throw new BadRequest(MESSAGES.PROVIDE_RECIPIENT)
+      }
+
+      if (!payload.message_id) {
+        // the first time forward draft message
+        const forwardMessage = await this.messageService.findById(payload.forward_message.toString())
+
+        if (!forwardMessage) {
+          throw new BadRequest(MESSAGES.MESSAGE_NOT_FOUND)
+        }
+        const orginalMessage = !forwardMessage.orginal_message
+          ? forwardMessage
+          : await this.messageService.findById(forwardMessage.orginal_message.toString())
+
+        if (!orginalMessage) {
+          throw new BadRequest(MESSAGES.MESSAGE_NOT_FOUND)
+        }
+        const payloadMessage: Partial<IMessage> = {
+          subject: 'Fwd: ' + forwardMessage.subject,
+          body:
+            '---------- Forwarded message ----------' +
+            '\n\n' +
+            'From: ' +
+            forwardMessage.from +
+            '\n' +
+            'Date: ' +
+            forwardMessage.sent_date +
+            'Subject: ' +
+            forwardMessage.subject +
+            '\n' +
+            'To: ' +
+            forwardMessage.to.join(', ') +
+            '\n' +
+            forwardMessage.body,
+
+          to: payload?.to?.length > 0 ? payload.to : [],
+          cc: payload?.cc?.length > 0 ? payload.cc : [],
+          bcc: payload?.bcc?.length > 0 ? payload.bcc : [],
+          attachments: payload.attachments || [],
+          draft_status: true,
+          from: mail_address,
+          forward_message: payload.forward_message
+        }
+
+        const message = await this.messageService.create(payloadMessage)
+
+        const conversation = await this.conversation.findById(payload.conversation_id.toString())
+
+        if (!conversation) {
+          throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
+        }
+
+        conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
+        conversation.last_message_date = message.draft_date
+        conversation.draft_status = true
+        conversation.read_status = true
+        conversation.messages.push(message._id)
+
+        await conversation.save()
+
+        return { conversation: await conversation.populate('messages') }
+      } else {
+        // update the forward draft message
+        const message = await this.messageService.updateMessageById(payload.message_id.toString(), {
+          ...payload,
+          draft_status: true,
+          from: mail_address
+        })
+
+        if (!message) throw new BadRequest(MESSAGES.MESSAGE_NOT_FOUND)
+
+        const conversation = await this.conversation.updateById(payload.conversation_id.toString(), {
+          has_attachments: !!payload?.attachments?.length
+        })
+
+        if (!conversation) {
+          throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
+        }
+
+        return { conversation: await conversation.populate('messages') }
+      }
+    }
+
+    // handle save normal draft message
     if (!payload.message_id && !payload.conversation_id) {
       const message = await this.messageService.create({
         ...payload,
@@ -65,6 +207,7 @@ export class MailBoxService {
       }
     }
 
+    // handle update normal draft message
     if (payload.message_id && payload.conversation_id) {
       const message = await this.messageService.updateMessageById(payload.message_id.toString(), {
         ...payload,
@@ -82,8 +225,7 @@ export class MailBoxService {
         participant_mail: [mail_address, ...(payload.to || []), ...(payload.cc || []), ...(payload.bcc || [])],
         mail_address: mail_address,
         draft_status: true,
-        read_status: true,
-        messages: [message._id]
+        read_status: true
       })
 
       if (!conversation) {
@@ -215,7 +357,7 @@ export class MailBoxService {
     }
 
     const isReplyFromNormalParticipant = [...orginalMessage.to, ...orginalMessage.cc].includes(mail_address)
-    const isReplyFromBcc = orginalMessage.bcc.includes(mail_address)
+    const isReplyFromBcc = orginalMessage?.bcc?.includes(mail_address)
     const payloadMessage: Partial<IMessage> = {
       subject: 'Re: ' + orginalMessage.subject,
       body: payload.body,
@@ -374,28 +516,25 @@ export class MailBoxService {
     }
 
     const recipients = [...message.to, ...message.cc]
+
+    console.log('recipients', recipients)
+
     const bccRecipients = message.bcc
 
     // case when forward message is from normal participant
-
     if (recipients.length > 0) {
       const conversation = await this.conversation.findById(payload.conversation_id.toString())
       if (!conversation) {
         throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
       }
-      conversation.participant_mail = Array.from(new Set([...recipients, ...conversation.participant_mail]))
-      conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
-      conversation.last_message_date = message.sent_date
-      conversation.sent_status = true
-      conversation.draft_status = false
-      conversation.read_status = true
+
+      console.log('participants', conversation.participant_mail)
 
       await Promise.all([
-        conversation.save(),
         ...recipients.map(async (recipient) => {
           if (conversation.participant_mail.includes(recipient)) {
             const conversation = await this.conversation.findOne({
-              participant_mail: recipient,
+              mail_address: recipient,
               messages: { $in: [orginalMessage._id] }
             })
 
@@ -426,6 +565,15 @@ export class MailBoxService {
           }
         })
       ])
+
+      conversation.participant_mail = Array.from(new Set([...recipients, ...conversation.participant_mail]))
+      conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
+      conversation.last_message_date = message.sent_date
+      conversation.sent_status = true
+      conversation.draft_status = false
+      conversation.read_status = true
+
+      await conversation.save()
     }
 
     if (bccRecipients.length > 0) {
@@ -434,14 +582,7 @@ export class MailBoxService {
         throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
       }
 
-      conversation.participant_mail = Array.from(new Set([...bccRecipients, ...conversation.participant_mail]))
-      conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
-      conversation.last_message_date = message.sent_date
-      conversation.sent_status = true
-      conversation.draft_status = false
-
       await Promise.all([
-        conversation.save(),
         ...bccRecipients.map(async (recipient) => {
           const payloadConversation: Partial<IConversation> = {
             subject: message.subject,
@@ -456,6 +597,13 @@ export class MailBoxService {
           return this.conversation.create(payloadConversation)
         })
       ])
+
+      conversation.participant_mail = Array.from(new Set([...bccRecipients, ...conversation.participant_mail]))
+      conversation.has_attachments = conversation.has_attachments || message.attachments.length > 0
+      conversation.last_message_date = message.sent_date
+      conversation.sent_status = true
+      conversation.draft_status = false
+      await conversation.save()
     }
 
     const conversation = await this.conversation.findById(payload.conversation_id.toString())
@@ -465,11 +613,51 @@ export class MailBoxService {
     }
   }
 
-  draftDiscardMessage(mail_address: string, payload: { message_id: string; conversation_id: string }) {
-    return Promise.all([
-      this.messageService.deleteMessageById(payload.message_id),
-      this.conversation.deleteConversationById(payload.conversation_id)
-    ])
+  async discardMessage(mail_address: string, conversation_id: string, message_id: string) {
+    const conversation = await this.conversation.findOne({
+      _id: conversation_id,
+      participant_mail: mail_address
+    })
+
+    if (!conversation) {
+      throw new BadRequest(MESSAGES.CONVERSATION_NOT_FOUND)
+    }
+
+    const isContainMessage = conversation.messages.map((i) => i.toString()).includes(message_id)
+
+    if (!isContainMessage) {
+      throw new BadRequest(MESSAGES.MESSAGE_NOT_FOUND)
+    }
+
+    conversation.messages = conversation.messages.filter((i) => i.toString() !== message_id)
+
+    if (conversation.messages.length === 0) {
+      return Promise.all([
+        this.messageService.deleteMessageById(message_id),
+        this.conversation.deleteConversationById(conversation_id)
+      ])
+    }
+
+    return this.messageService.deleteMessageById(message_id)
+  }
+
+  async toggleAutoReply(mail_address: string, payload: { message_reply?: string }) {
+    const mailBox = await this.repository.findOne({
+      mail_address
+    })
+
+    if (!mailBox) {
+      throw new BadRequest()
+    }
+
+    mailBox.auto_reply_message = payload.message_reply ? payload.message_reply : mailBox.auto_reply_message
+    mailBox.auto_reply_enabled = !mailBox.auto_reply_enabled
+
+    await mailBox.save()
+
+    return {
+      _id: mailBox._id
+    }
   }
 
   create(mail_address: string) {

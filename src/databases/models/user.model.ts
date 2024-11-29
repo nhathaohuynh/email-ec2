@@ -18,7 +18,15 @@ export interface IUser extends Document {
   updatedAt: Date
 }
 
-export const USER_SELECT_FIELDS = ['_id', 'full_name', 'email', 'avatar', 'phone', 'two_step_verification']
+export const USER_SELECT_FIELDS = [
+  '_id',
+  'full_name',
+  'email',
+  'avatar',
+  'phone',
+  'two_step_verification',
+  'mail_address'
+]
 
 const UserSchema: Schema = new Schema<IUser>(
   {
