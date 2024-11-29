@@ -55,7 +55,6 @@ export class UserService {
 
   async signUp({ email, mail_address, full_name, phone, password }: UserRegistration) {
     const existingUsser = await this.userRepository.findByPhone(phone)
-
     if (existingUsser) {
       throw new ConflictError(CONSTANT.MSG_USER_EXIST)
     }

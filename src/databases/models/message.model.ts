@@ -113,6 +113,16 @@ const messageSchema = new Schema<IMessage>(
     forward_message: {
       type: Schema.Types.ObjectId,
       default: null
+    },
+
+    sent_date: {
+      type: Date,
+      default: null
+    },
+
+    draft_status: {
+      type: Boolean,
+      default: true
     }
   },
   {
