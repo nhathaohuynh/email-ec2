@@ -25,7 +25,6 @@ export const conversationSchema = new Schema<IConversation>(
   {
     subject: {
       type: String,
-      required: true,
       trim: true
     },
 
@@ -41,7 +40,6 @@ export const conversationSchema = new Schema<IConversation>(
 
     slug: {
       type: String,
-      required: true,
       trim: true
     },
 
